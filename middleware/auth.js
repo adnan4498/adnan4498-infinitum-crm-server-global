@@ -168,6 +168,49 @@ export const canPerformAction = (action) => {
 export const isAdminOrPM = authorize(USER_ROLES.ADMIN, USER_ROLES.PROJECT_MANAGER);
 
 /**
+ * Check if user can create tasks (Admin, PM role, or Employee with PM designation)
+ */
+export const canCreateTasks = (req, res, next) => {
+  try {
+    if (!req.user) {
+      return res.status(HTTP_STATUS.UNAUTHORIZED).json({
+        success: false,
+        message: ERROR_MESSAGES.UNAUTHORIZED_ACCESS,
+        error: 'Authentication required'
+      });
+    }
+
+    // Admin can always create tasks
+    if (req.user.role === USER_ROLES.ADMIN) {
+      return next();
+    }
+
+    // Project Manager role can create tasks
+    if (req.user.role === USER_ROLES.PROJECT_MANAGER) {
+      return next();
+    }
+
+    // Employee with project_manager designation can create tasks
+    if (req.user.role === USER_ROLES.EMPLOYEE && req.user.designation === 'project_manager') {
+      return next();
+    }
+
+    return res.status(HTTP_STATUS.FORBIDDEN).json({
+      success: false,
+      message: ERROR_MESSAGES.INSUFFICIENT_PERMISSIONS,
+      error: 'You need Admin role, Project Manager role, or Employee with Project Manager designation to create tasks'
+    });
+  } catch (error) {
+    console.error('Task creation permission error:', error);
+    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
+      success: false,
+      message: ERROR_MESSAGES.SERVER_ERROR,
+      error: 'Permission check failed'
+    });
+  }
+};
+
+/**
  * Check if user is admin only
  */
 export const isAdmin = authorize(USER_ROLES.ADMIN);
@@ -339,6 +382,7 @@ export default {
   authorize,
   canPerformAction,
   isAdminOrPM,
+  canCreateTasks,
   isAdmin,
   isEmployee,
   isOwnerOrAuthorized,

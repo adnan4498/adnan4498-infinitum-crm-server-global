@@ -66,8 +66,17 @@ class TaskController {
 
       // Role-based filtering
       if (req.user.role === USER_ROLES.EMPLOYEE) {
-        // Employees can only see their own tasks
-        filter.assignedTo = req.user._id;
+        // Employees can see tasks assigned to them
+        // Employees with project_manager designation can also see tasks they created
+        if (req.user.designation === 'project_manager') {
+          filter.$or = [
+            { assignedTo: req.user._id }, // Tasks assigned to them
+            { assignedBy: req.user._id }  // Tasks they created
+          ];
+        } else {
+          // Regular employees can only see their own tasks
+          filter.assignedTo = req.user._id;
+        }
       }
 
       // Build sort object
@@ -572,7 +581,17 @@ class TaskController {
 
       // Role-based filtering
       if (req.user.role === USER_ROLES.EMPLOYEE) {
-        filter.assignedTo = req.user._id;
+        // Employees can see tasks assigned to them
+        // Employees with project_manager designation can also see tasks they created
+        if (req.user.designation === 'project_manager') {
+          filter.$or = [
+            { assignedTo: req.user._id }, // Tasks assigned to them
+            { assignedBy: req.user._id }  // Tasks they created
+          ];
+        } else {
+          // Regular employees can only see their own tasks
+          filter.assignedTo = req.user._id;
+        }
       }
 
       const [

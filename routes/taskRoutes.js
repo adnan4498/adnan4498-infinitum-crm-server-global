@@ -4,6 +4,7 @@ import {
   authenticate,
   authorize,
   isAdminOrPM,
+  canCreateTasks,
   isOwnerOrAuthorized,
   canPerformAction
 } from '../middleware/auth.js';
@@ -51,11 +52,11 @@ router.get('/',
 /**
  * @route   POST /api/tasks
  * @desc    Create new task
- * @access  Private (Admin, PM)
+ * @access  Private (Admin, PM role, or Employee with PM designation)
  * @body    { title, description, assignedTo, priority?, dueDate, estimatedHours?, category?, tags? }
  */
 router.post('/',
-  isAdminOrPM,
+  canCreateTasks,
   validateTaskCreation,
   TaskController.createTask
 );
