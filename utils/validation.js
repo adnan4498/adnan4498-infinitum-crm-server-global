@@ -65,9 +65,7 @@ export const validateUserRegistration = [
 
   body('password')
     .isLength({ min: VALIDATION_RULES.PASSWORD_MIN_LENGTH })
-    .withMessage(`Password must be at least ${VALIDATION_RULES.PASSWORD_MIN_LENGTH} characters long`)
-    .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/)
-    .withMessage('Password must contain at least one lowercase letter, one uppercase letter, and one number'),
+    .withMessage(`Password must be at least ${VALIDATION_RULES.PASSWORD_MIN_LENGTH} characters long`),
 
   body('role')
     .optional()
@@ -80,10 +78,6 @@ export const validateUserRegistration = [
     .isIn(Object.values(USER_DESIGNATIONS))
     .withMessage(`Designation must be one of: ${Object.values(USER_DESIGNATIONS).join(', ')}`),
 
-  body('phone')
-    .optional()
-    .isMobilePhone()
-    .withMessage('Please provide a valid phone number'),
 
   body('department')
     .optional()
@@ -134,10 +128,6 @@ export const validateUserUpdate = [
     .matches(/^[a-zA-Z\s]+$/)
     .withMessage('Last name can only contain letters and spaces'),
 
-  body('phone')
-    .optional()
-    .isMobilePhone()
-    .withMessage('Please provide a valid phone number'),
 
   body('designation')
     .optional()
@@ -179,9 +169,7 @@ export const validatePasswordChange = [
 
   body('newPassword')
     .isLength({ min: VALIDATION_RULES.PASSWORD_MIN_LENGTH })
-    .withMessage(`New password must be at least ${VALIDATION_RULES.PASSWORD_MIN_LENGTH} characters long`)
-    .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/)
-    .withMessage('New password must contain at least one lowercase letter, one uppercase letter, and one number'),
+    .withMessage(`New password must be at least ${VALIDATION_RULES.PASSWORD_MIN_LENGTH} characters long`),
 
   body('confirmPassword')
     .custom((value, { req }) => {

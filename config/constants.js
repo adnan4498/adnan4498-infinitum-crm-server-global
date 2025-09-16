@@ -10,6 +10,7 @@ export const USER_ROLES = {
 };
 
 export const USER_DESIGNATIONS = {
+  ADMIN: 'admin',
   DEVELOPER: 'developer',
   DESIGNER: 'designer',
   TESTER: 'tester',
@@ -21,6 +22,7 @@ export const USER_DESIGNATIONS = {
   MOBILE: 'mobile',
   DATA_ANALYST: 'data_analyst',
   PRODUCT_MANAGER: 'product_manager',
+  PROJECT_MANAGER: 'project_manager',
   MARKETING: 'marketing',
   SALES: 'sales',
   HR: 'hr',

@@ -45,14 +45,9 @@ class AuthController {
         });
       }
 
-      // Only admin can create admin users
-      if (role === USER_ROLES.ADMIN && req.user?.role !== USER_ROLES.ADMIN) {
-        return res.status(HTTP_STATUS.FORBIDDEN).json({
-          success: false,
-          message: ERROR_MESSAGES.INSUFFICIENT_PERMISSIONS,
-          error: 'Only administrators can create admin accounts'
-        });
-      }
+      // Allow anyone to create accounts during signup (no authentication required)
+      // Admin restrictions only apply to authenticated users creating accounts through employee management
+      // The role will be properly saved and used for permissions after login
 
       // Create new user
       const userData = {

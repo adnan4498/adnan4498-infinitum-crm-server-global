@@ -22,7 +22,24 @@ const app = express()
 // Security middleware
 app.use(helmet())
 app.use(cors({
-  origin: process.env.CLIENT_URL || 'http://localhost:3000',
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+
+    const allowedOrigins = [
+      'http://localhost:3000',
+      'http://localhost:3001',
+      'http://localhost:3002',
+      'http://localhost:3003',
+      process.env.CLIENT_URL
+    ].filter(Boolean);
+
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+
+    return callback(new Error('Not allowed by CORS'));
+  },
   credentials: true
 }))
 app.use(compression())
@@ -128,6 +145,6 @@ app.use((error, req, res, next) => {
 const PORT = process.env.PORT || 5000
 app.listen(PORT, () => {
     console.log(`🚀 Server is running on port ${PORT}`)
-    console.log(`📱 Client URL: ${process.env.CLIENT_URL || 'http://localhost:3000'}`)
+    console.log(`📱 Allowed Client URLs: http://localhost:3000, http://localhost:3001, http://localhost:3002, http://localhost:3003, ${process.env.CLIENT_URL || 'none'}`)
     console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`)
 })

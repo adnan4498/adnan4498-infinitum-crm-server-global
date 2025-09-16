@@ -81,7 +81,7 @@ router.get('/designation/:designation',
  * @query   page, limit, role, designation, department, isActive, search, sortBy, sortOrder
  */
 router.get('/',
-  isAdminOrPM,
+  authenticate,
   validateQueryParams,
   EmployeeController.getAllEmployees
 );
