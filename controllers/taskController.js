@@ -13,15 +13,7 @@ import {
 } from '../config/constants.js';
 import emailService from '../utils/emailService.js';
 
-/**
- * Task Management Controller
- * Handles CRUD operations for tasks, time tracking, and notifications
- */
 class TaskController {
-  /**
-   * Get all tasks with filtering and pagination
-   * GET /api/tasks
-   */
   static async getAllTasks(req, res) {
     try {
       const {
@@ -38,10 +30,7 @@ class TaskController {
         endDate
       } = req.query;
 
-      // Validate pagination
       const { page: validPage, limit: validLimit, skip } = validatePagination(page, limit);
-
-      // Build filter query
       const filter = {};
 
       if (status) filter.status = status;
@@ -49,14 +38,12 @@ class TaskController {
       if (assignedTo) filter.assignedTo = assignedTo;
       if (assignedBy) filter.assignedBy = assignedBy;
 
-      // Date range filter
       if (startDate || endDate) {
         filter.createdAt = {};
         if (startDate) filter.createdAt.$gte = new Date(startDate);
         if (endDate) filter.createdAt.$lte = new Date(endDate);
       }
 
-      // Search functionality
       if (search) {
         filter.$or = [
           { title: new RegExp(search, 'i') },
@@ -64,7 +51,6 @@ class TaskController {
         ];
       }
 
-      // Role-based filtering
       if (req.user.role === USER_ROLES.EMPLOYEE) {
         // Employees can see tasks assigned to them
         // Employees with project_manager designation can also see tasks they created
@@ -79,11 +65,9 @@ class TaskController {
         }
       }
 
-      // Build sort object
       const sort = {};
       sort[sortBy] = sortOrder === 'desc' ? -1 : 1;
 
-      // Execute query
       const [tasks, total] = await Promise.all([
         Task.find(filter)
           .populate('assignedTo', 'firstName lastName email designation')
@@ -94,7 +78,6 @@ class TaskController {
         Task.countDocuments(filter)
       ]);
 
-      // Calculate pagination info
       const totalPages = Math.ceil(total / validLimit);
       const hasNextPage = validPage < totalPages;
       const hasPrevPage = validPage > 1;
@@ -124,10 +107,6 @@ class TaskController {
     }
   }
 
-  /**
-   * Get task by ID
-   * GET /api/tasks/:id
-   */
   static async getTaskById(req, res) {
     try {
       const { id } = req.params;
@@ -146,7 +125,6 @@ class TaskController {
         });
       }
 
-      // Check permissions
       if (req.user.role === USER_ROLES.EMPLOYEE && task.assignedTo._id.toString() !== req.user._id.toString()) {
         return res.status(HTTP_STATUS.FORBIDDEN).json({
           success: false,
@@ -170,10 +148,6 @@ class TaskController {
     }
   }
 
-  /**
-   * Create new task
-   * POST /api/tasks
-   */
   static async createTask(req, res) {
     try {
       const sanitizedData = sanitizeInput(req.body);
@@ -188,7 +162,6 @@ class TaskController {
         tags = []
       } = sanitizedData;
 
-      // Validate assigned user exists and is active
       const assignedUser = await User.findById(assignedTo);
       if (!assignedUser || !assignedUser.isActive) {
         return res.status(HTTP_STATUS.BAD_REQUEST).json({
@@ -198,7 +171,6 @@ class TaskController {
         });
       }
 
-      // Create task
       const taskData = {
         title,
         description,
@@ -214,11 +186,9 @@ class TaskController {
       const newTask = new Task(taskData);
       await newTask.save();
 
-      // Populate the response
       await newTask.populate('assignedTo', 'firstName lastName email designation');
       await newTask.populate('assignedBy', 'firstName lastName email designation');
 
-      // Send notification to assigned user
       try {
         await Notification.createTaskNotification({
           recipientId: assignedTo,
@@ -227,12 +197,9 @@ class TaskController {
           type: NOTIFICATION_TYPES.TASK_ASSIGNED,
           action: 'assigned'
         });
-
-        // Send email notification
         await emailService.sendTaskAssignedEmail(assignedUser.email, newTask, req.user);
       } catch (notificationError) {
         console.error('Notification error:', notificationError);
-        // Don't fail the task creation if notification fails
       }
 
       res.status(HTTP_STATUS.CREATED).json({
@@ -265,10 +232,6 @@ class TaskController {
     }
   }
 
-  /**
-   * Update task
-   * PUT /api/tasks/:id
-   */
   static async updateTask(req, res) {
     try {
       const { id } = req.params;
@@ -283,7 +246,6 @@ class TaskController {
         });
       }
 
-      // Check permissions
       if (req.user.role === USER_ROLES.EMPLOYEE && task.assignedTo.toString() !== req.user._id.toString()) {
         return res.status(HTTP_STATUS.FORBIDDEN).json({
           success: false,
@@ -292,7 +254,6 @@ class TaskController {
         });
       }
 
-      // Employees can only update certain fields
       if (req.user.role === USER_ROLES.EMPLOYEE) {
         const allowedFields = ['status', 'comments'];
         const requestedFields = Object.keys(sanitizedData);
@@ -307,7 +268,6 @@ class TaskController {
         }
       }
 
-      // Update task
       const updatedTask = await Task.findByIdAndUpdate(
         id,
         { ...sanitizedData, updatedAt: new Date() },
@@ -344,10 +304,6 @@ class TaskController {
     }
   }
 
-  /**
-   * Delete task
-   * DELETE /api/tasks/:id
-   */
   static async deleteTask(req, res) {
     try {
       const { id } = req.params;
@@ -361,7 +317,6 @@ class TaskController {
         });
       }
 
-      // Only admin and PM can delete tasks
       if (req.user.role === USER_ROLES.EMPLOYEE) {
         return res.status(HTTP_STATUS.FORBIDDEN).json({
           success: false,
@@ -387,10 +342,6 @@ class TaskController {
     }
   }
 
-  /**
-   * Start task timer
-   * POST /api/tasks/:id/start
-   */
   static async startTask(req, res) {
     try {
       const { id } = req.params;
@@ -404,7 +355,6 @@ class TaskController {
         });
       }
 
-      // Check if user is assigned to this task
       if (task.assignedTo.toString() !== req.user._id.toString()) {
         return res.status(HTTP_STATUS.FORBIDDEN).json({
           success: false,
@@ -413,10 +363,8 @@ class TaskController {
         });
       }
 
-      // Start time tracking
       await task.startTimeTracking();
 
-      // Send notification
       try {
         await Notification.createTaskNotification({
           recipientId: task.assignedBy,
@@ -453,10 +401,6 @@ class TaskController {
     }
   }
 
-  /**
-   * Stop task timer
-   * POST /api/tasks/:id/stop
-   */
   static async stopTask(req, res) {
     try {
       const { id } = req.params;
@@ -471,7 +415,6 @@ class TaskController {
         });
       }
 
-      // Check if user is assigned to this task
       if (task.assignedTo.toString() !== req.user._id.toString()) {
         return res.status(HTTP_STATUS.FORBIDDEN).json({
           success: false,
@@ -480,7 +423,6 @@ class TaskController {
         });
       }
 
-      // Stop time tracking
       await task.stopTimeTracking(notes);
 
       res.status(HTTP_STATUS.OK).json({
@@ -507,10 +449,6 @@ class TaskController {
     }
   }
 
-  /**
-   * Complete task
-   * POST /api/tasks/:id/complete
-   */
   static async completeTask(req, res) {
     try {
       const { id } = req.params;
@@ -524,7 +462,6 @@ class TaskController {
         });
       }
 
-      // Check if user is assigned to this task
       if (task.assignedTo.toString() !== req.user._id.toString()) {
         return res.status(HTTP_STATUS.FORBIDDEN).json({
           success: false,
@@ -533,10 +470,8 @@ class TaskController {
         });
       }
 
-      // Mark as completed
       await task.markAsCompleted(req.user._id);
 
-      // Send notification to assigner
       try {
         const assignedUser = await User.findById(task.assignedTo);
         await Notification.createTaskNotification({
@@ -547,7 +482,6 @@ class TaskController {
           action: 'completed'
         });
 
-        // Send email notification
         const assigner = await User.findById(task.assignedBy);
         if (assigner) {
           await emailService.sendTaskCompletedEmail(assigner.email, task, assignedUser);
@@ -571,15 +505,10 @@ class TaskController {
     }
   }
 
-  /**
-   * Get task statistics
-   * GET /api/tasks/stats
-   */
   static async getTaskStats(req, res) {
     try {
       let filter = {};
 
-      // Role-based filtering
       if (req.user.role === USER_ROLES.EMPLOYEE) {
         // Employees can see tasks assigned to them
         // Employees with project_manager designation can also see tasks they created
@@ -650,10 +579,6 @@ class TaskController {
     }
   }
 
-  /**
-   * Add comment to task
-   * POST /api/tasks/:id/comments
-   */
   static async addComment(req, res) {
     try {
       const { id } = req.params;
@@ -668,7 +593,6 @@ class TaskController {
         });
       }
 
-      // Check permissions
       if (req.user.role === USER_ROLES.EMPLOYEE && task.assignedTo.toString() !== req.user._id.toString()) {
         return res.status(HTTP_STATUS.FORBIDDEN).json({
           success: false,

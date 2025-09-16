@@ -178,12 +178,12 @@ userSchema.virtual('isLocked').get(function() {
 });
 
 // Index for better query performance
-userSchema.index({ email: 1 });
+// userSchema.index({ email: 1 });
 userSchema.index({ role: 1 });
 userSchema.index({ designation: 1 });
 userSchema.index({ department: 1 });
 userSchema.index({ isActive: 1 });
-userSchema.index({ employeeId: 1 });
+// userSchema.index({ employeeId: 1 });
 
 // Pre-save middleware for password hashing
 userSchema.pre('save', async function(next) {
