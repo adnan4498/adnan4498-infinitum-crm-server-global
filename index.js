@@ -23,27 +23,10 @@ const app = express();
 app.use(helmet());
 app.use(
   cors({
-    origin: function (origin, callback) {
-      // Allow requests with no origin (like mobile apps or curl requests)
-      if (!origin) return callback(null, true);
-
-      const allowedOrigins = [
-        "https://infinitum-crm-client-global.vercel.app",
-        "https://adnan4498-infinitum-crm-server-glob.vercel.app",
-        "http://localhost:3000",
-        "http://localhost:3001",
-        "http://localhost:3002",
-        "http://localhost:3003",
-        process.env.CLIENT_URL,
-      ].filter(Boolean);
-
-      if (allowedOrigins.includes(origin)) {
-        return callback(null, true);
-      }
-
-      return callback(new Error("Not allowed by CORS"));
-    },
-    credentials: true,
+    origin: ["https://akc-ems.vercel.app"], // Frontend origin
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"], // Allowed methods
+    allowedHeaders: ["Content-Type", "Authorization"], // Allowed headers
+    credentials: true, // Allow cookies and credentials
   })
 );
 app.use(compression());
@@ -149,10 +132,10 @@ app.use((error, req, res, next) => {
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`🚀 Server is running on port ${PORT}`);
-  console.log(
-    `📱 Allowed Client URLs: http://localhost:3000, http://localhost:3001, http://localhost:3002, http://localhost:3003, ${
-      process.env.CLIENT_URL || "none"
-    }`
-  );
+  // console.log(
+  //   `📱 Allowed Client URLs: http://localhost:3000, http://localhost:3001, http://localhost:3002, http://localhost:3003, ${
+  //     process.env.CLIENT_URL || "none"
+  //   }`
+  // );
   console.log(`🌍 Environment: ${process.env.NODE_ENV || "development"}`);
 });
