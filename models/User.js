@@ -1,5 +1,5 @@
 import mongoose from 'mongoose';
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 import { USER_ROLES, USER_DESIGNATIONS } from '../config/constants.js';
 
 /**

@@ -6,7 +6,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node index.js",
-    "dev": "nodemon --env-file=.env index.js"
+    "dev": "nodemon --env-file=.env index.js",
+    "postinstall": "npm rebuild bcrypt --build-from-source"
   },
   "keywords": [
     "task-management",
@@ -17,8 +18,8 @@
   "license": "MIT",
   "description": "Professional Task Management System Backend",
   "dependencies": {
-    "bcrypt": "^5.1.1",
-    "compression": "^1.8.1",
+    "bcryptjs": "^3.0.2",
+    "compression": "^1.8.1", 
     "cors": "^2.8.5",
     "dotenv": "^16.6.1",
     "express": "^4.21.0",
@@ -36,7 +37,7 @@
     "path": "^0.12.7",
     "socket.io": "^4.8.1"
   },
-  "engines": { 
+  "engines": {
     "node": ">=16.0.0"
   }
 }
