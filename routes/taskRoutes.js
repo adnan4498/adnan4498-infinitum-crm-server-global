@@ -4,7 +4,8 @@ import {
   authenticate,
   isAdminOrPM,
   isOwnerOrAuthorized,
-  canPerformAction
+  canPerformAction,
+  canCreateTasks
 } from '../middleware/auth.js';
 import {
   validateTaskCreation,
@@ -32,7 +33,7 @@ router.get('/',
  * @desc    Create new task
  * @access  Private (Admin, PM)
  * @body    { title, description, assignedTo, priority?, dueDate, estimatedHours?, category?, tags? }
- */
+ */ 
 router.post('/',
   canCreateTasks,
   validateTaskCreation,
