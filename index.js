@@ -28,6 +28,7 @@ app.use(
       if (!origin) return callback(null, true);
 
       const allowedOrigins = [
+        "https://infinitum-crm-client-global.vercel.app",
         "https://adnan4498-infinitum-crm-server-glob.vercel.app",
         "http://localhost:3000",
         "http://localhost:3001",
