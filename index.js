@@ -22,12 +22,14 @@ const app = express();
 // Security middleware
 app.use(helmet());
 app.use(
-  cors({
-    origin: ["https://infinitum-crm-client-global.vercel.app"], // Frontend origin
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"], // Allowed methods
-    allowedHeaders: ["Content-Type", "Authorization"], // Allowed headers
-    credentials: true, // Allow cookies and credentials
-  })
+  cors(
+  //   {
+  //   origin: ["https://infinitum-crm-client-global.vercel.app"], // Frontend origin
+  //   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"], // Allowed methods
+  //   allowedHeaders: ["Content-Type", "Authorization"], // Allowed headers
+  //   credentials: true, // Allow cookies and credentials
+  // }
+)
 );
 app.use(compression());
 app.use(mongoSanitize());
