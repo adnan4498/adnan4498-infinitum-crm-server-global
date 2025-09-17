@@ -1,72 +1,75 @@
-import express from 'express'
-import cors from 'cors'
-import helmet from 'helmet'
-import morgan from 'morgan'
-import compression from 'compression'
-import mongoSanitize from 'express-mongo-sanitize'
-import rateLimit from 'express-rate-limit'
-import authRouter from './routes/authRoutes.js'
-import employeeRouter from './routes/employeeRoutes.js'
-import taskRouter from './routes/taskRoutes.js'
+import express from "express";
+import cors from "cors";
+import helmet from "helmet";
+import morgan from "morgan";
+import compression from "compression";
+import mongoSanitize from "express-mongo-sanitize";
+import rateLimit from "express-rate-limit";
+import authRouter from "./routes/authRoutes.js";
+import employeeRouter from "./routes/employeeRoutes.js";
+import taskRouter from "./routes/taskRoutes.js";
 // import departmentRouter from './routes/department.js'
 // import salaryRouter from './routes/salary.js'
 // import leaveRouter from './routes/leave.js'
 // import settingRouter from './routes/setting.js'
 // import attendanceRouter from './routes/attendance.js'
 // import dashboardRouter from './routes/dashboard.js'
-import database from './config/database.js'
+import database from "./config/database.js";
 
-database.connect()
-const app = express()
+database.connect();
+const app = express();
 
 // Security middleware
-app.use(helmet())
-app.use(cors({
-  origin: function (origin, callback) {
-    // Allow requests with no origin (like mobile apps or curl requests)
-    if (!origin) return callback(null, true);
+app.use(helmet());
+app.use(
+  cors({
+    origin: function (origin, callback) {
+      // Allow requests with no origin (like mobile apps or curl requests)
+      if (!origin) return callback(null, true);
 
-    const allowedOrigins = [
-      'http://localhost:3000',
-      'http://localhost:3001',
-      'http://localhost:3002',
-      'http://localhost:3003',
-      process.env.CLIENT_URL
-    ].filter(Boolean);
+      const allowedOrigins = [
+        "https://adnan4498-infinitum-crm-server-glob.vercel.app",
+        "http://localhost:3000",
+        "http://localhost:3001",
+        "http://localhost:3002",
+        "http://localhost:3003",
+        process.env.CLIENT_URL,
+      ].filter(Boolean);
 
-    if (allowedOrigins.includes(origin)) {
-      return callback(null, true);
-    }
+      if (allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
 
-    return callback(new Error('Not allowed by CORS'));
-  },
-  credentials: true
-}))
-app.use(compression())
-app.use(mongoSanitize())
+      return callback(new Error("Not allowed by CORS"));
+    },
+    credentials: true,
+  })
+);
+app.use(compression());
+app.use(mongoSanitize());
 
 // Rate limiting
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: 100, // limit each IP to 100 requests per windowMs
-  message: 'Too many requests from this IP, please try again later.'
-})
-app.use('/api/', limiter)
+  message: "Too many requests from this IP, please try again later.",
+});
+app.use("/api/", limiter);
 
 // Logging
-app.use(morgan('combined'))
+app.use(morgan("combined"));
 
 // Body parsing
-app.use(express.json({ limit: '10mb' }))
-app.use(express.urlencoded({ extended: true }))
+app.use(express.json({ limit: "10mb" }));
+app.use(express.urlencoded({ extended: true }));
 
 // Static files
 // app.use(express.static('public/uploads'))
 
 // API routes
-app.use('/api/auth', authRouter)
-app.use('/api/employees', employeeRouter)
-app.use('/api/tasks', taskRouter)
+app.use("/api/auth", authRouter);
+app.use("/api/employees", employeeRouter);
+app.use("/api/tasks", taskRouter);
 // app.use('/api/department', departmentRouter)
 // app.use('/api/salary', salaryRouter)
 // app.use('/api/leave', leaveRouter)
@@ -75,76 +78,80 @@ app.use('/api/tasks', taskRouter)
 // app.use('/api/dashboard', dashboardRouter)
 
 // Health check endpoint
-app.get('/api/health', (req, res) => {
+app.get("/api/health", (req, res) => {
   res.status(200).json({
     success: true,
-    message: 'Server is running',
+    message: "Server is running",
     timestamp: new Date().toISOString(),
-    environment: process.env.NODE_ENV || 'development'
-  })
-})
+    environment: process.env.NODE_ENV || "development",
+  });
+});
 
 // 404 handler
-app.use('*', (req, res) => {
+app.use("*", (req, res) => {
   res.status(404).json({
     success: false,
-    message: 'Route not found',
-    path: req.originalUrl
-  })
-})
+    message: "Route not found",
+    path: req.originalUrl,
+  });
+});
 
 // Global error handler
 app.use((error, req, res, next) => {
-  console.error('Global error handler:', error)
+  console.error("Global error handler:", error);
 
   // Mongoose validation error
-  if (error.name === 'ValidationError') {
-    const errors = Object.values(error.errors).map(err => err.message)
+  if (error.name === "ValidationError") {
+    const errors = Object.values(error.errors).map((err) => err.message);
     return res.status(400).json({
       success: false,
-      message: 'Validation Error',
-      errors
-    })
+      message: "Validation Error",
+      errors,
+    });
   }
 
   // Mongoose duplicate key error
   if (error.code === 11000) {
-    const field = Object.keys(error.keyPattern)[0]
+    const field = Object.keys(error.keyPattern)[0];
     return res.status(409).json({
       success: false,
-      message: 'Duplicate field value',
-      error: `${field} already exists`
-    })
+      message: "Duplicate field value",
+      error: `${field} already exists`,
+    });
   }
 
   // JWT errors
-  if (error.name === 'JsonWebTokenError') {
+  if (error.name === "JsonWebTokenError") {
     return res.status(401).json({
       success: false,
-      message: 'Invalid token',
-      error: 'Token is not valid'
-    })
+      message: "Invalid token",
+      error: "Token is not valid",
+    });
   }
 
-  if (error.name === 'TokenExpiredError') {
+  if (error.name === "TokenExpiredError") {
     return res.status(401).json({
       success: false,
-      message: 'Token expired',
-      error: 'Token has expired'
-    })
+      message: "Token expired",
+      error: "Token has expired",
+    });
   }
 
   // Default error
   res.status(error.status || 500).json({
     success: false,
-    message: error.message || 'Internal server error',
-    ...(process.env.NODE_ENV === 'development' && { stack: error.stack })
-  })
-})
+    message: error.message || "Internal server error",
+    ...(process.env.NODE_ENV === "development" && { stack: error.stack }),
+  });
+});
 
-const PORT = process.env.PORT || 5000
+const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
-    console.log(`🚀 Server is running on port ${PORT}`)
-    console.log(`📱 Allowed Client URLs: http://localhost:3000, http://localhost:3001, http://localhost:3002, http://localhost:3003, ${process.env.CLIENT_URL || 'none'}`)
-    console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`)
-})
+  console.log(`🚀 Server is running on port ${PORT}`);
+  console.log(
+    `📱 Allowed Client URLs: http://localhost:3000, http://localhost:3001, http://localhost:3002, http://localhost:3003, ${
+      process.env.CLIENT_URL || "none"
+    }`
+  );
+  console.log(`🌍 Environment: ${process.env.NODE_ENV || "development"}`);
+});
