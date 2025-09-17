@@ -36,7 +36,7 @@
     "path": "^0.12.7",
     "socket.io": "^4.8.1"
   },
-  "engines": {
+  "engines": { 
     "node": ">=16.0.0"
   }
 }
