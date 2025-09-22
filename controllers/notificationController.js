@@ -67,24 +67,6 @@ class NotificationController {
     }
   }
 
-  static async getUnreadCount(req, res) {
-    try {
-      const count = await Notification.getUnreadCount(req.user._id);
-
-      res.status(HTTP_STATUS.OK).json({
-        success: true,
-        message: 'Unread count retrieved successfully',
-        data: { unreadCount: count }
-      });
-    } catch (error) {
-      console.error('Get unread count error:', error);
-      res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
-        success: false,
-        message: ERROR_MESSAGES.SERVER_ERROR,
-        error: 'Failed to retrieve unread count'
-      });
-    }
-  }
 
   static async markAsRead(req, res) {
     try {

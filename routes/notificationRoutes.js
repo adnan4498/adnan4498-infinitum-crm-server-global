@@ -21,12 +21,6 @@ router.get('/',
   NotificationController.getNotifications
 );
 
-/**
- * @route   GET /api/notifications/unread-count
- * @desc    Get unread notification count
- * @access  Private
- */
-router.get('/unread-count', NotificationController.getUnreadCount);
 
 /**
  * @route   GET /api/notifications/stats

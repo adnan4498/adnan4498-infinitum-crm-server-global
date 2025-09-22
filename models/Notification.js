@@ -409,7 +409,7 @@ notificationSchema.statics.cleanupExpired = function() {
  */
 notificationSchema.statics.getStats = async function(userId) {
   const stats = await this.aggregate([
-    { $match: { recipient: mongoose.Types.ObjectId(userId) } },
+    { $match: { recipient: userId } },
     {
       $group: {
         _id: '$type',
@@ -422,12 +422,12 @@ notificationSchema.statics.getStats = async function(userId) {
       }
     }
   ]);
-  
+
   const totalUnread = await this.countDocuments({
     recipient: userId,
     status: NOTIFICATION_STATUS.UNREAD
   });
-  
+
   return {
     totalUnread,
     byType: stats.reduce((acc, stat) => {
