@@ -221,6 +221,17 @@ export const validateTaskCreation = [
       return true;
     }),
 
+  body('startDate')
+    .optional()
+    .isISO8601()
+    .withMessage('Start date must be a valid date')
+    .custom((value, { req }) => {
+      if (value && req.body.dueDate && new Date(value) >= new Date(req.body.dueDate)) {
+        throw new Error('Start date must be before due date');
+      }
+      return true;
+    }),
+
   body('estimatedHours')
     .optional()
     .isNumeric()
@@ -279,6 +290,17 @@ export const validateTaskUpdate = [
     .optional()
     .isISO8601()
     .withMessage('Due date must be a valid date'),
+
+  body('startDate')
+    .optional()
+    .isISO8601()
+    .withMessage('Start date must be a valid date')
+    .custom((value, { req }) => {
+      if (value && req.body.dueDate && new Date(value) >= new Date(req.body.dueDate)) {
+        throw new Error('Start date must be before due date');
+      }
+      return true;
+    }),
 
   body('estimatedHours')
     .optional()

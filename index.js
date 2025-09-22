@@ -8,6 +8,7 @@ import rateLimit from "express-rate-limit";
 import authRouter from "./routes/authRoutes.js";
 import employeeRouter from "./routes/employeeRoutes.js";
 import taskRouter from "./routes/taskRoutes.js";
+import notificationRouter from "./routes/notificationRoutes.js";
 // import departmentRouter from './routes/department.js'
 // import salaryRouter from './routes/salary.js'
 // import leaveRouter from './routes/leave.js'
@@ -56,6 +57,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use("/api/auth", authRouter);
 app.use("/api/employees", employeeRouter);
 app.use("/api/tasks", taskRouter);
+app.use("/api/notifications", notificationRouter);
 // app.use('/api/department', departmentRouter)
 // app.use('/api/salary', salaryRouter)
 // app.use('/api/leave', leaveRouter)

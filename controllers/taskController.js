@@ -157,6 +157,7 @@ class TaskController {
         assignedTo,
         priority = TASK_PRIORITY.MEDIUM,
         dueDate,
+        startDate,
         estimatedHours,
         category,
         tags = []
@@ -178,6 +179,7 @@ class TaskController {
         assignedBy: req.user._id,
         priority,
         dueDate: new Date(dueDate),
+        startDate: startDate ? new Date(startDate) : null,
         estimatedHours,
         category,
         tags
@@ -317,7 +319,12 @@ class TaskController {
         });
       }
 
-      if (req.user.role === USER_ROLES.EMPLOYEE) {
+      // Check if user has permission to delete tasks
+      const canDeleteTasks = req.user.role === USER_ROLES.ADMIN ||
+        req.user.role === USER_ROLES.PROJECT_MANAGER ||
+        (req.user.role === USER_ROLES.EMPLOYEE && req.user.designation === 'project_manager');
+
+      if (!canDeleteTasks) {
         return res.status(HTTP_STATUS.FORBIDDEN).json({
           success: false,
           message: ERROR_MESSAGES.INSUFFICIENT_PERMISSIONS,
