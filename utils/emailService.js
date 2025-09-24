@@ -161,6 +161,68 @@ class EmailService {
   }
 
   /**
+   * Send task status update notification email
+   * @param {string} recipientEmail - Recipient email (assigner)
+   * @param {Object} task - Task object
+   * @param {Object} assignee - User assigned to the task
+   * @param {Object} updater - User who updated the status
+   * @param {string} newStatus - New status value
+   */
+  async sendTaskStatusUpdateEmail(recipientEmail, task, assignee, updater, newStatus) {
+    const subject = `Task Status Updated: ${task.title}`;
+
+    const html = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <h2 style="color: #007bff;">Task Status Updated</h2>
+        <p>Hello,</p>
+        <p><strong>${updater.firstName} ${updater.lastName}</strong> has updated the status of a task assigned to <strong>${assignee.firstName} ${assignee.lastName}</strong>.</p>
+
+        <div style="background-color: #f8f9fa; padding: 20px; margin: 20px 0; border-radius: 5px;">
+          <h3 style="margin-top: 0; color: #333;">${task.title}</h3>
+          <p><strong>Description:</strong> ${task.description}</p>
+          <p><strong>Assigned To:</strong> ${assignee.firstName} ${assignee.lastName}</p>
+          <p><strong>Updated By:</strong> ${updater.firstName} ${updater.lastName}</p>
+          <p><strong>New Status:</strong> <span style="background-color: #007bff; color: white; padding: 2px 8px; border-radius: 3px; font-weight: bold;">${newStatus.replace('_', ' ').toUpperCase()}</span></p>
+          <p><strong>Updated Date:</strong> ${new Date().toLocaleDateString()}</p>
+          ${task.category ? `<p><strong>Category:</strong> ${task.category}</p>` : ''}
+        </div>
+
+        <p>You can review the task details and status history in the system.</p>
+
+        <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee;">
+          <p style="color: #666; font-size: 12px;">
+            This is an automated message from the Task Management System.
+          </p>
+        </div>
+      </div>
+    `;
+
+    const text = `
+      Task Status Updated: ${task.title}
+
+      ${updater.firstName} ${updater.lastName} has updated the status of a task assigned to ${assignee.firstName} ${assignee.lastName}.
+
+      Task Details:
+      - Title: ${task.title}
+      - Description: ${task.description}
+      - Assigned To: ${assignee.firstName} ${assignee.lastName}
+      - Updated By: ${updater.firstName} ${updater.lastName}
+      - New Status: ${newStatus.replace('_', ' ').toUpperCase()}
+      - Updated Date: ${new Date().toLocaleDateString()}
+      ${task.category ? `- Category: ${task.category}` : ''}
+
+      You can review the task details and status history in the system.
+    `;
+
+    return this.sendEmail({
+      to: recipientEmail,
+      subject,
+      html,
+      text
+    });
+  }
+
+  /**
    * Send task overdue notification email
    * @param {string} recipientEmail - Recipient email
    * @param {Object} task - Task object

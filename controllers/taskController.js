@@ -270,11 +270,43 @@ class TaskController {
         }
       }
 
+      // Check if status is being updated
+      const isStatusUpdate = sanitizedData.status && sanitizedData.status !== task.status;
+
       const updatedTask = await Task.findByIdAndUpdate(
         id,
         { ...sanitizedData, updatedAt: new Date() },
         { new: true, runValidators: true }
       ).populate('assignedTo assignedBy', 'firstName lastName email designation');
+
+      // Send notification if status was updated
+      if (isStatusUpdate) {
+        try {
+          await Notification.createTaskNotification({
+            recipientId: task.assignedBy,
+            senderId: req.user._id,
+            task: updatedTask,
+            type: NOTIFICATION_TYPES.TASK_UPDATED,
+            action: `changed status to ${sanitizedData.status}`
+          });
+
+          // Send email notification for status updates
+          const assigner = await User.findById(task.assignedBy);
+          const assignee = await User.findById(task.assignedTo);
+          if (assigner && assignee) {
+            await emailService.sendTaskStatusUpdateEmail(
+              assigner.email,
+              updatedTask,
+              assignee,
+              req.user,
+              sanitizedData.status
+            );
+          }
+        } catch (notificationError) {
+          console.error('Notification error:', notificationError);
+          // Don't fail the update if notification fails
+        }
+      }
 
       res.status(HTTP_STATUS.OK).json({
         success: true,
