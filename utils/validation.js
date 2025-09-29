@@ -1,9 +1,8 @@
 import { body, param, query, validationResult } from 'express-validator';
-import { 
-  USER_ROLES, 
-  USER_DESIGNATIONS, 
-  TASK_STATUS, 
-  TASK_PRIORITY,
+import {
+  USER_ROLES,
+  USER_DESIGNATIONS,
+  TASK_STATUS,
   NOTIFICATION_TYPES,
   HTTP_STATUS,
   ERROR_MESSAGES,
@@ -204,10 +203,6 @@ export const validateTaskCreation = [
     .isMongoId()
     .withMessage('Invalid user ID format'),
 
-  body('priority')
-    .optional()
-    .isIn(Object.values(TASK_PRIORITY))
-    .withMessage(`Priority must be one of: ${Object.values(TASK_PRIORITY).join(', ')}`),
 
   body('dueDate')
     .notEmpty()
@@ -281,10 +276,6 @@ export const validateTaskUpdate = [
     .isIn(Object.values(TASK_STATUS))
     .withMessage(`Status must be one of: ${Object.values(TASK_STATUS).join(', ')}`),
 
-  body('priority')
-    .optional()
-    .isIn(Object.values(TASK_PRIORITY))
-    .withMessage(`Priority must be one of: ${Object.values(TASK_PRIORITY).join(', ')}`),
 
   body('dueDate')
     .optional()
@@ -360,10 +351,6 @@ export const validateQueryParams = [
     .isIn(Object.values(TASK_STATUS))
     .withMessage(`Status must be one of: ${Object.values(TASK_STATUS).join(', ')}`),
 
-  query('priority')
-    .optional()
-    .isIn(Object.values(TASK_PRIORITY))
-    .withMessage(`Priority must be one of: ${Object.values(TASK_PRIORITY).join(', ')}`),
 
   query('role')
     .optional()

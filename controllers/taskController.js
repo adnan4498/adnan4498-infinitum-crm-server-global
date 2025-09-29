@@ -7,7 +7,6 @@ import {
   ERROR_MESSAGES,
   SUCCESS_MESSAGES,
   TASK_STATUS,
-  TASK_PRIORITY,
   USER_ROLES,
   NOTIFICATION_TYPES
 } from '../config/constants.js';
@@ -20,7 +19,6 @@ class TaskController {
         page = 1,
         limit = 10,
         status,
-        priority,
         assignedTo,
         assignedBy,
         search,
@@ -34,7 +32,6 @@ class TaskController {
       const filter = {};
 
       if (status) filter.status = status;
-      if (priority) filter.priority = priority;
       if (assignedTo) filter.assignedTo = assignedTo;
       if (assignedBy) filter.assignedBy = assignedBy;
 
@@ -155,7 +152,6 @@ class TaskController {
         title,
         description,
         assignedTo,
-        priority = TASK_PRIORITY.MEDIUM,
         dueDate,
         startDate,
         estimatedHours,
@@ -177,7 +173,6 @@ class TaskController {
         description,
         assignedTo,
         assignedBy: req.user._id,
-        priority,
         dueDate: new Date(dueDate),
         startDate: startDate ? new Date(startDate) : null,
         estimatedHours,
@@ -282,8 +277,18 @@ class TaskController {
       // Send notification if status was updated
       if (isStatusUpdate) {
         try {
+          // Notify the assigner (person who created the task)
           await Notification.createTaskNotification({
             recipientId: task.assignedBy,
+            senderId: req.user._id,
+            task: updatedTask,
+            type: NOTIFICATION_TYPES.TASK_UPDATED,
+            action: `changed status to ${sanitizedData.status}`
+          });
+
+          // Also notify the assignee (employee assigned to the task)
+          await Notification.createTaskNotification({
+            recipientId: task.assignedTo,
             senderId: req.user._id,
             task: updatedTask,
             type: NOTIFICATION_TYPES.TASK_UPDATED,
@@ -513,8 +518,18 @@ class TaskController {
 
       try {
         const assignedUser = await User.findById(task.assignedTo);
+        // Notify the assigner (person who created the task)
         await Notification.createTaskNotification({
           recipientId: task.assignedBy,
+          senderId: req.user._id,
+          task,
+          type: NOTIFICATION_TYPES.TASK_COMPLETED,
+          action: 'completed'
+        });
+
+        // Also notify the assignee (employee who completed the task)
+        await Notification.createTaskNotification({
+          recipientId: task.assignedTo,
           senderId: req.user._id,
           task,
           type: NOTIFICATION_TYPES.TASK_COMPLETED,
@@ -565,7 +580,6 @@ class TaskController {
       const [
         totalTasks,
         statusStats,
-        priorityStats,
         overdueTasks,
         activeTimers
       ] = await Promise.all([
@@ -573,10 +587,6 @@ class TaskController {
         Task.aggregate([
           { $match: filter },
           { $group: { _id: '$status', count: { $sum: 1 } } }
-        ]),
-        Task.aggregate([
-          { $match: filter },
-          { $group: { _id: '$priority', count: { $sum: 1 } } }
         ]),
         Task.countDocuments({
           ...filter,
@@ -592,10 +602,6 @@ class TaskController {
       const stats = {
         totalTasks,
         byStatus: statusStats.reduce((acc, stat) => {
-          acc[stat._id] = stat.count;
-          return acc;
-        }, {}),
-        byPriority: priorityStats.reduce((acc, stat) => {
           acc[stat._id] = stat.count;
           return acc;
         }, {}),

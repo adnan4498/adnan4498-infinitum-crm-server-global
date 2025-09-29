@@ -9,11 +9,11 @@ import authRouter from "./routes/authRoutes.js";
 import employeeRouter from "./routes/employeeRoutes.js";
 import taskRouter from "./routes/taskRoutes.js";
 import notificationRouter from "./routes/notificationRoutes.js";
+import attendanceRouter from "./routes/attendanceRoutes.js";
 // import departmentRouter from './routes/department.js'
 // import salaryRouter from './routes/salary.js'
 // import leaveRouter from './routes/leave.js'
 // import settingRouter from './routes/setting.js'
-// import attendanceRouter from './routes/attendance.js'
 // import dashboardRouter from './routes/dashboard.js'
 import database from "./config/database.js";
 
@@ -58,11 +58,11 @@ app.use("/api/auth", authRouter);
 app.use("/api/employees", employeeRouter);
 app.use("/api/tasks", taskRouter);
 app.use("/api/notifications", notificationRouter);
+app.use("/api/attendance", attendanceRouter);
 // app.use('/api/department', departmentRouter)
 // app.use('/api/salary', salaryRouter)
 // app.use('/api/leave', leaveRouter)
 // app.use('/api/setting', settingRouter)
-// app.use('/api/attendance', attendanceRouter)
 // app.use('/api/dashboard', dashboardRouter)
 
 // Health check endpoint

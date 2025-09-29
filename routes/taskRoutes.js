@@ -5,7 +5,8 @@ import {
   isAdminOrPM,
   isOwnerOrAuthorized,
   canPerformAction,
-  canCreateTasks
+  canCreateTasks,
+  canManageTasks
 } from '../middleware/auth.js';
 import {
   validateTaskCreation,
@@ -53,7 +54,7 @@ router.put('/:id',
 
 router.delete('/:id',
   validateObjectId('id'),
-  isAdminOrPM,
+  canManageTasks,
   TaskController.deleteTask
 );
 

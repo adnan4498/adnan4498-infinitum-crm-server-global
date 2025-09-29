@@ -1,5 +1,5 @@
 import mongoose from 'mongoose';
-import { TASK_STATUS, TASK_PRIORITY } from '../config/constants.js';
+import { TASK_STATUS } from '../config/constants.js';
 
 /**
  * Task Schema
@@ -37,12 +37,6 @@ const taskSchema = new mongoose.Schema({
     type: String,
     enum: Object.values(TASK_STATUS),
     default: TASK_STATUS.PENDING,
-    required: true
-  },
-  priority: {
-    type: String,
-    enum: Object.values(TASK_PRIORITY),
-    default: TASK_PRIORITY.MEDIUM,
     required: true
   },
   
@@ -237,7 +231,6 @@ taskSchema.virtual('isBeingTracked').get(function() {
 taskSchema.index({ assignedTo: 1, status: 1 });
 taskSchema.index({ assignedBy: 1 });
 taskSchema.index({ status: 1 });
-taskSchema.index({ priority: 1 });
 taskSchema.index({ dueDate: 1 });
 taskSchema.index({ createdAt: -1 });
 taskSchema.index({ 'timeTracking.isActive': 1 });
@@ -420,8 +413,7 @@ taskSchema.methods.removeWatcher = async function(userId) {
 taskSchema.statics.findByAssignee = function(userId, options = {}) {
   const query = { assignedTo: userId };
   if (options.status) query.status = options.status;
-  if (options.priority) query.priority = options.priority;
-  
+
   return this.find(query)
     .populate('assignedBy', 'firstName lastName email')
     .populate('assignedTo', 'firstName lastName email')

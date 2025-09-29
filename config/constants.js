@@ -37,13 +37,6 @@ export const TASK_STATUS = {
   OVERDUE: 'overdue'
 };
 
-export const TASK_PRIORITY = {
-  LOW: 'low',
-  MEDIUM: 'medium',
-  HIGH: 'high',
-  URGENT: 'urgent'
-};
-
 export const NOTIFICATION_TYPES = {
   TASK_ASSIGNED: 'task_assigned',
   TASK_COMPLETED: 'task_completed',
@@ -145,7 +138,6 @@ export default {
   USER_ROLES,
   USER_DESIGNATIONS,
   TASK_STATUS,
-  TASK_PRIORITY,
   NOTIFICATION_TYPES,
   NOTIFICATION_STATUS,
   HTTP_STATUS,
